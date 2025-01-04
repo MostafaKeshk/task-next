@@ -1,24 +1,26 @@
-import { Octokit } from "octokit";
-
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
-});
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 class HTTPService {
-  // url = "https://api.github.com/octocat";
-  // token = process.env.GITHUB_TOKEN;
-
-  // fetch(url: string, method: "POST" | "GET", headers = {}) {
-  //   const newUrl = this.url + url;
-  //   return fetch(newUrl, {
-  //     method,
-  //     headers: { ...headers, Authorization: `Bearer ${this.token}` },
-  //   });
-  // }
+  private readonly baseURL = "https://api.github.com";
 
   async get(url: string) {
-    return await octokit.request("GET /" + url);
-    // return this.fetch(url, "GET", headers);
+    try {
+      const response = await fetch(`${this.baseURL}${url}`, {
+        headers: {
+          Authorization: `Bearer ${process.env.GITHUB_TOKEN}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "something went wrong");
+      }
+
+      return await response.json();
+    } catch (error: any) {
+      console.error({ error });
+      throw new Error(error?.message || "something went wrong");
+    }
   }
 }
 
